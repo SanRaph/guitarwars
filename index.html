@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+<head>
+	<title>Guitar Wars -High Scores</title>
+</head>
+<body>
+	<h2>Guitar Wars -High Scores</h2>
+	<p>Welcome to Guitar warrior, do you have what it takes to crack the high score list? if so just <a href="addscore"></a>just add your own scores</p>
+	<hr  />
+
+	<?php 
+	//Pluggin CONSTANTS
+	require_once('connectvars.php');
+
+	//connect to the server
+
+	$dbc = mysql_connect('DATA_BASE_HOST', 'DATA_BASE_USERNAME', 'DATA_BASE_PASSWORD', 'DATA_BASE_NAME') or die('Not connnected');
+
+	//Retrieve score data from Mysql
+	$query = SELECT * FROM guitarwarsdb;
+
+	//give the query to the server
+	$result = mysql_query($dbc, $query) or die('Could not query database');
+
+	//loop tru the returned data ids in the result and format in as HTML
+	echo '<table>';
+
+	//a variable that counts thru high scores, isolate the first score
+	$i = 0;
+
+	while ($row = mysql_fetch_array($result)) {
+		//displaying high score
+		if ($i == 0) {
+			# if $i is 0, then we know it is first top score so render Html code for the header
+			echo ' <tr><td colspan="2" class="topscoreheader"> Top score: '  .$row['score']  .'</td></tr>';
+		}
+
+
+		# code... display the score data in table rows
+		echo '<tr><td class = "scoresinfo>';
+
+		echo '<span class = "score">' .$row['score'] .'</span><br />';
+		echo '<strong>Name: </strong>' .$row['name']. '<br />';
+		echo '<strong>Date:</strong>' .$row['date'] . '<br />';
+
+		if (is_file(PHOTO_UPLOAD_PATH .$row['screenshot']) && filesize(PHOTO_UPLOAD_PATH .$row['screenshot']) >0) {
+			# the process file
+			echo '<td><img src=" '.$row['screenshot'] .' " alt="score image"  /><br />';
+		}
+		else{
+			echo '<td><img src="'.PHOTO_UPLOAD_PATH   .'unverified file'   .'"   alt="unverified scores"      />  </td></tr>';
+		}
+
+		$i++; //increment counter at then end of the loop
+
+	}
+
+	echo '<table>';
+
+	//close database connection
+	mysql_close($dbc);
+
+
+	?>
+
+</body>
+</html>

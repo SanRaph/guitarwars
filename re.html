@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html"; charset="utf-8">
+	<title>Guitar War- Remove a high score</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+	<h2>Guitar Wars - Remove High Scores</h2>
+
+	<?php  
+	#Include CONSTANT definitions
+	require_once('vars.php');
+	require_once('connectvars.php');
+
+	//extrapolate incoming data from either POST or GET from the admin
+
+	if ( isset ($_GET['id'])  && isset($_GET['date']) && isset($_GET['name'])  && isset($_GET['score']) && isset($_GET['screenshot'])  ) {
+		# Grab the score data from the GET
+		$id = $_GET['id'];
+		$date = $_GET['date'];
+		$name = $_GET['name'];
+		$score = $_GET['score'];
+		$screenshot = $_GET['screenshot'];
+
+	} //Conditon script with if-else to react differently depending on whether the incoming request is a GET or POST
+	else if (isset($_POST['id'])   && isset($_POST['date'])  && isset($_POST['name']) && isset($_POST['score'])  && isset($_POST['screenshot'])    ) { 
+		# Grab the score data from the POST
+		$id = $_POST['id'];
+		$name = $_POST['name'];
+		$score = $_POST['score'];
+		$screenshot = $_POST['screenshot'];
+
+	} else{
+		echo ' <p class="error"> Sorry! no score was specified for removal. </p>   ';
+	}
+
+
+
+
+	if ( isset($_POST['submit'])  ) {
+		if ($_POST['conform'] == 'Yes') {
+		    # Delete the screenshot file image from the server,@unlink deletes the image with its name as part of the removal.
+		    @unlink(PHOTO_UPLOAD_PATH, $screenshot);
+
+
+
+		    //Having got and conditioned the variables, let's head to the database
+
+	        $dbc = mysql_connect(DATA_BASE_HOST, DATA_BASE_USERNAME , DATA_BASE_PASSWORD ,DATA_BASE_NAME) or die('could not connect to database');
+
+	        //Having achieved connection, let's query mysql by deleting the score data from database
+	        $query =" DELETE FROM guitarwarsdb WHERE id = $id LIMIT 1   ";
+
+	        //Pass the query to the database to retrieve return IDs
+	        $result = mysql_query($dbc, $query);
+
+	       //now close the database to free resources
+	       mysql_close($dbc); 
+        } 
+        else{
+        	 //confirm success with the user
+	           echo ' <p class= "error">High score was not removed!</p>    ';
+        }  
+    
+            
+	}
+
+
+
+	
+	//Now build the form within php but DO NOT call itself using $_SERVER['PHP_SELF'] as this will get both GET and POST, we need only form POST variables for safety.
+	if ( isset($id)   && isset($name)  && isset($date)  && isset($score)   && isset($screenshot)  ) {
+		# make out way to ensure user is certain about this decision and format it in html
+		echo ' <p>Are you sure you want to delete the following high scores?      ';
+
+		echo '<p>
+		<strong>Name:</strong>' .$name. '<br />'
+		'<strong>Date:</strong>' .$date. '<br />'
+		'<strong>Score:</strong>' .$score. '</p>';
+
+		//confirmation form and remember to actioned form with .php script and not recursively call the form to itself
+		echo ' <form method= "post" action= "removescore.php">   ';
+		echo ' <input type= "radio" name= "confirm" value="Yes" />Yes ';
+		echo ' <input type= "radio" name= "confirm" value= "No" checked= "checked" />No <br />  ';
+		echo ' <input type= "submit" name="submit" value= "Delete" />  ';
+
+
+		//store score data in a few hidden form fields so that gets sent along as part of the POST request, this is the data that gets sent to database to be deleted
+		echo ' <input type="hidden" name= "id" value="' .$id . '" />';
+		echo ' <input type="hidden" name= "id" value="' .$name . '" />';
+		echo ' <input type="hidden" name= "id" value="' .$score . '" />';
+		//close the form
+		echo ' </form>';
+
+	}
+
+
+
+	//Now build a link that links back to admin.php with two &lt; showing two bacward arrows(<<)
+	echo ' <p><a href="admin.php">&lt;&lt; Back to Admin page</a></p>  ';
+
+
+	?>
+
+</body>
+</html>
